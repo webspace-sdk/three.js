@@ -48,7 +48,7 @@ function WebXRManager( renderer, gl ) {
 	cameraVR.layers.enable( 1 );
 	cameraVR.layers.enable( 2 );
 
-	var poseMatrix = new THREE.Matrix4();
+	var poseMatrix = new Matrix4();
 
 	//
 
