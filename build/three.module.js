@@ -18016,7 +18016,7 @@ WebGLUniforms.seqWithValue = function ( seq, values ) {
 
 function WebGLShader( gl, type, string ) {
 
-	var shader = gl.createShader( type );
+	const shader = gl.createShader( type );
 
 	gl.shaderSource( shader, string );
 	gl.compileShader( shader );
@@ -19277,7 +19277,7 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 
 function WebGLProperties() {
 
-	var properties = new WeakMap();
+	let properties = new WeakMap();
 
 	function get( object ) {
 
@@ -19380,13 +19380,13 @@ function reversePainterSortStable( a, b ) {
 
 function WebGLRenderList() {
 
-	var renderItems = [];
-	var renderItemsIndex = 0;
+	const renderItems = [];
+	let renderItemsIndex = 0;
 
-	var opaque = [];
-	var transparent = [];
+	const opaque = [];
+	const transparent = [];
 
-	var defaultProgram = { id: - 1 };
+	const defaultProgram = { id: - 1 };
 
 	function init() {
 
@@ -19399,7 +19399,7 @@ function WebGLRenderList() {
 
 	function getNextRenderItem( object, geometry, material, groupOrder, z, group ) {
 
-		var renderItem = renderItems[ renderItemsIndex ];
+		let renderItem = renderItems[ renderItemsIndex ];
 
 		if ( renderItem === undefined ) {
 
@@ -19439,7 +19439,7 @@ function WebGLRenderList() {
 
 	function push( object, geometry, material, groupOrder, z, group ) {
 
-		var renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
+		const renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
 
 		( material.transparent === true ? transparent : opaque ).push( renderItem );
 
@@ -19447,7 +19447,7 @@ function WebGLRenderList() {
 
 	function unshift( object, geometry, material, groupOrder, z, group ) {
 
-		var renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
+		const renderItem = getNextRenderItem( object, geometry, material, groupOrder, z, group );
 
 		( material.transparent === true ? transparent : opaque ).unshift( renderItem );
 
@@ -19475,11 +19475,11 @@ function WebGLRenderList() {
 
 function WebGLRenderLists() {
 
-	var lists = new WeakMap();
+	let lists = new WeakMap();
 
 	function onSceneDispose( event ) {
 
-		var scene = event.target;
+		const scene = event.target;
 
 		scene.removeEventListener( 'dispose', onSceneDispose );
 
@@ -19489,8 +19489,8 @@ function WebGLRenderLists() {
 
 	function get( scene, camera ) {
 
-		var cameras = lists.get( scene );
-		var list;
+		const cameras = lists.get( scene );
+		let list;
 		if ( cameras === undefined ) {
 
 			list = new WebGLRenderList();
@@ -19936,10 +19936,10 @@ function WebGLLights() {
 
 function WebGLRenderState() {
 
-	var lights = new WebGLLights();
+	const lights = new WebGLLights();
 
-	var lightsArray = [];
-	var shadowsArray = [];
+	const lightsArray = [];
+	const shadowsArray = [];
 
 	function init() {
 
@@ -19986,7 +19986,7 @@ function WebGLRenderState() {
 
 function WebGLRenderStates() {
 
-	var renderStates = new WeakMap();
+	let renderStates = new WeakMap();
 
 	function onSceneDispose( event ) {
 
@@ -20000,7 +20000,7 @@ function WebGLRenderStates() {
 
 	function get( scene, camera ) {
 
-		var renderState;
+		let renderState;
 
 		if ( renderStates.has( scene ) === false ) {
 
@@ -24316,7 +24316,7 @@ function WebXRManager( renderer, gl ) {
 	cameraVR.layers.enable( 1 );
 	cameraVR.layers.enable( 2 );
 
-	var poseMatrix = new THREE.Matrix4();
+	var poseMatrix = new Matrix4();
 
 	//
 

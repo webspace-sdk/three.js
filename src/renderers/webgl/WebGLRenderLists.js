@@ -76,7 +76,7 @@ function WebGLRenderList() {
 
 	function getNextRenderItem( object, geometry, material, groupOrder, z, group ) {
 
-		const renderItem = renderItems[ renderItemsIndex ];
+		let renderItem = renderItems[ renderItemsIndex ];
 
 		if ( renderItem === undefined ) {
 
@@ -152,7 +152,7 @@ function WebGLRenderList() {
 
 function WebGLRenderLists() {
 
-	const lists = new WeakMap();
+	let lists = new WeakMap();
 
 	function onSceneDispose( event ) {
 
