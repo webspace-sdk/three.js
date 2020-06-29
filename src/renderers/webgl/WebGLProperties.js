@@ -4,7 +4,7 @@
 
 function WebGLProperties() {
 
-	var properties = new WeakMap();
+	const properties = new WeakMap();
 
 	function get( object ) {
 
