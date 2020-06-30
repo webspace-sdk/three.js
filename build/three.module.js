@@ -15552,15 +15552,15 @@ function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
 
 function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 
-	var maxVertexAttributes = gl.getParameter( 34921 );
+	const maxVertexAttributes = gl.getParameter( 34921 );
 
-	var extension = capabilities.isWebGL2 ? null : extensions.get( 'OES_vertex_array_object' );
-	var vaoAvailable = capabilities.isWebGL2 || extension !== null;
+	const extension = capabilities.isWebGL2 ? null : extensions.get( 'OES_vertex_array_object' );
+	const vaoAvailable = capabilities.isWebGL2 || extension !== null;
 
-	var bindingStates = {};
+	const bindingStates = {};
 
-	var defaultState = createBindingState( null );
-	var currentState = defaultState;
+	const defaultState = createBindingState( null );
+	let currentState = defaultState;
 
 	function setup( object, material, program, geometry, index ) {
 
