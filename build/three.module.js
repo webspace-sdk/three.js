@@ -24644,7 +24644,7 @@ function WebGLRenderer( parameters ) {
 
 	parameters = parameters || {};
 
-	var _canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' ),
+	const _canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' ),
 		_context = parameters.context !== undefined ? parameters.context : null,
 
 		_alpha = parameters.alpha !== undefined ? parameters.alpha : false,
@@ -24657,8 +24657,8 @@ function WebGLRenderer( parameters ) {
 		_failIfMajorPerformanceCaveat = parameters.failIfMajorPerformanceCaveat !== undefined ? parameters.failIfMajorPerformanceCaveat : false,
 		_forceWebVR = parameters.forceWebVR !== undefined ? parameters.forceWebVR : false;
 
-	var currentRenderList = null;
-	var currentRenderState = null;
+	let currentRenderList = null;
+	let currentRenderState = null;
 
 	// public properties
 
@@ -24713,53 +24713,53 @@ function WebGLRenderer( parameters ) {
 
 	// internal properties
 
-	var _this = this,
+	const _this = this;
 
-		_isContextLost = false,
+	let _isContextLost = false;
 
-		// internal state cache
+	// internal state cache
 
-		_framebuffer = null,
+	let _framebuffer = null;
 
-		_currentActiveCubeFace = 0,
-		_currentActiveMipmapLevel = 0,
-		_currentRenderTarget = null,
-		_currentFramebuffer = null,
-		_currentMaterialId = - 1,
+	let _currentActiveCubeFace = 0;
+	let _currentActiveMipmapLevel = 0;
+	let _currentRenderTarget = null;
+	let _currentFramebuffer = null;
+	let _currentMaterialId = - 1;
 
-		_currentCamera = null,
-		_currentArrayCamera = null,
+	let _currentCamera = null;
+	let _currentArrayCamera = null;
 
-		_currentViewport = new Vector4(),
-		_currentScissor = new Vector4(),
-		_currentScissorTest = null,
+	const _currentViewport = new Vector4();
+	const _currentScissor = new Vector4();
+	let _currentScissorTest = null;
 
-		//
+	//
 
-		_width = _canvas.width,
-		_height = _canvas.height,
+	let _width = _canvas.width;
+	let _height = _canvas.height;
 
-		_pixelRatio = 1,
+	let _pixelRatio = 1;
 
-		_viewport = new Vector4( 0, 0, _width, _height ),
-		_scissor = new Vector4( 0, 0, _width, _height ),
-		_scissorTest = false,
+	const _viewport = new Vector4( 0, 0, _width, _height );
+	const _scissor = new Vector4( 0, 0, _width, _height );
+	let _scissorTest = false;
 
-		// frustum
+	// frustum
 
-		_frustum = new Frustum(),
+	const _frustum = new Frustum();
 
-		// clipping
+	// clipping
 
-		_clipping = new WebGLClipping(),
-		_clippingEnabled = false,
-		_localClippingEnabled = false,
+	const _clipping = new WebGLClipping();
+	let _clippingEnabled = false;
+	let _localClippingEnabled = false;
 
-		// camera matrices cache
+	// camera matrices cache
 
-		_projScreenMatrix = new Matrix4(),
+	const _projScreenMatrix = new Matrix4();
 
-		_vector3 = new Vector3();
+	const _vector3 = new Vector3();
 
 	function getTargetPixelRatio() {
 
@@ -24769,11 +24769,11 @@ function WebGLRenderer( parameters ) {
 
 	// initialize
 
-	var _gl;
+	let _gl;
 
 	try {
 
-		var contextAttributes = {
+		const contextAttributes = {
 			alpha: _alpha,
 			depth: _depth,
 			stencil: _stencil,
@@ -24825,15 +24825,15 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	var extensions, capabilities, state, info;
-	var properties, textures, attributes, geometries, objects;
-	var programCache, renderLists, renderStates, uniformsGroups;
+	let extensions, capabilities, state, info;
+	let properties, textures, attributes, geometries, objects;
+	let programCache, renderLists, renderStates, uniformsGroups;
 
-	var background, morphtargets, bufferRenderer, indexedBufferRenderer;
+	let background, morphtargets, bufferRenderer, indexedBufferRenderer;
 
-	var utils, bindingStates;
+	let utils, bindingStates;
 
-	var videoTextures;
+	let videoTextures;
 
 	function initGLContext() {
 

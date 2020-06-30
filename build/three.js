@@ -24723,53 +24723,53 @@
 
 		// internal properties
 
-		var _this = this,
+		var _this = this;
 
-			_isContextLost = false,
+		var _isContextLost = false;
 
-			// internal state cache
+		// internal state cache
 
-			_framebuffer = null,
+		var _framebuffer = null;
 
-			_currentActiveCubeFace = 0,
-			_currentActiveMipmapLevel = 0,
-			_currentRenderTarget = null,
-			_currentFramebuffer = null,
-			_currentMaterialId = - 1,
+		var _currentActiveCubeFace = 0;
+		var _currentActiveMipmapLevel = 0;
+		var _currentRenderTarget = null;
+		var _currentFramebuffer = null;
+		var _currentMaterialId = - 1;
 
-			_currentCamera = null,
-			_currentArrayCamera = null,
+		var _currentCamera = null;
+		var _currentArrayCamera = null;
 
-			_currentViewport = new Vector4(),
-			_currentScissor = new Vector4(),
-			_currentScissorTest = null,
+		var _currentViewport = new Vector4();
+		var _currentScissor = new Vector4();
+		var _currentScissorTest = null;
 
-			//
+		//
 
-			_width = _canvas.width,
-			_height = _canvas.height,
+		var _width = _canvas.width;
+		var _height = _canvas.height;
 
-			_pixelRatio = 1,
+		var _pixelRatio = 1;
 
-			_viewport = new Vector4( 0, 0, _width, _height ),
-			_scissor = new Vector4( 0, 0, _width, _height ),
-			_scissorTest = false,
+		var _viewport = new Vector4( 0, 0, _width, _height );
+		var _scissor = new Vector4( 0, 0, _width, _height );
+		var _scissorTest = false;
 
-			// frustum
+		// frustum
 
-			_frustum = new Frustum(),
+		var _frustum = new Frustum();
 
-			// clipping
+		// clipping
 
-			_clipping = new WebGLClipping(),
-			_clippingEnabled = false,
-			_localClippingEnabled = false,
+		var _clipping = new WebGLClipping();
+		var _clippingEnabled = false;
+		var _localClippingEnabled = false;
 
-			// camera matrices cache
+		// camera matrices cache
 
-			_projScreenMatrix = new Matrix4(),
+		var _projScreenMatrix = new Matrix4();
 
-			_vector3 = new Vector3();
+		var _vector3 = new Vector3();
 
 		function getTargetPixelRatio() {
 
