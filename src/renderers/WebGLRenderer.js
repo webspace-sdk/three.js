@@ -36,6 +36,7 @@ import { WebGLState } from './webgl/WebGLState.js';
 import { WebGLTextures } from './webgl/WebGLTextures.js';
 import { WebGLUniforms } from './webgl/WebGLUniforms.js';
 import { WebGLUtils } from './webgl/WebGLUtils.js';
+import { WebVRManager } from './webvr/WebVRManager.js';
 import { WebXRManager } from './webxr/WebXRManager.js';
 import { WebGLMaterials } from "./webgl/WebGLMaterials.js";
 
@@ -316,9 +317,7 @@ function WebGLRenderer( parameters ) {
 
 	initGLContext();
 
-	// xr
-
-	const xr = new WebXRManager( _this, _gl );
+	const xr = ( typeof navigator !== 'undefined' && 'xr' in navigator ) ? new WebXRManager( _this, _gl ) : new WebVRManager( _this );
 
 	this.xr = xr;
 
@@ -1085,6 +1084,12 @@ function WebGLRenderer( parameters ) {
 
 		state.setPolygonOffset( false );
 
+		if ( xr.enabled && xr.submitFrame ) {
+
+			xr.submitFrame();
+
+		}
+
 		// _gl.finish();
 
 		currentRenderList = null;
@@ -1751,6 +1756,33 @@ function WebGLRenderer( parameters ) {
 			( material.isShaderMaterial && material.lights === true );
 
 	}
+
+	// this.setTexture2D = setTexture2D;
+	this.setTexture2D = ( function () {
+
+		var warned = false;
+
+		// backwards compatibility: peel texture.texture
+		return function setTexture2D( texture, slot ) {
+
+			if ( texture && texture.isWebGLRenderTarget ) {
+
+				if ( ! warned ) {
+
+					console.warn( "THREE.WebGLRenderer.setTexture2D: don't use render targets as textures. Use their .texture property instead." );
+					warned = true;
+
+				}
+
+				texture = texture.texture;
+
+			}
+
+			textures.setTexture2D( texture, slot );
+
+		};
+
+	}() );
 
 	//
 	this.setFramebuffer = function ( value ) {

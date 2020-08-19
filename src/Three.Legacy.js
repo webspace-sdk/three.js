@@ -1743,11 +1743,6 @@ Object.assign( WebGLRenderer.prototype, {
 		console.warn( 'THREE.WebGLRenderer: .setTexture() has been removed.' );
 
 	},
-	setTexture2D: function () {
-
-		console.warn( 'THREE.WebGLRenderer: .setTexture2D() has been removed.' );
-
-	},
 	setTextureCube: function () {
 
 		console.warn( 'THREE.WebGLRenderer: .setTextureCube() has been removed.' );
