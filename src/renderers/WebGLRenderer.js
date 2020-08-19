@@ -724,12 +724,6 @@ function WebGLRenderer( parameters ) {
 
 		var program = setProgram( camera, fog, material, object );
 
-		if ( object.isInstancedMesh === true ) {
-
-			updateBuffers = true;
-
-		}
-
 		//
 
 		var index = geometry.index;

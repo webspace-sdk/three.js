@@ -19,6 +19,12 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 
 		var updateBuffers = false;
 
+		if ( object.isInstancedMesh === true ) {
+
+			updateBuffers = true;
+
+		}
+
 		if ( vaoAvailable ) {
 
 			var state = getBindingState( geometry, program, material );
