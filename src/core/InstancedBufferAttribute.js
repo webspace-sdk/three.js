@@ -1,9 +1,5 @@
 import { BufferAttribute } from './BufferAttribute.js';
 
-/**
- * @author benaadams / https://twitter.com/ben_a_adams
- */
-
 function InstancedBufferAttribute( array, itemSize, normalized, meshPerAttribute ) {
 
 	if ( typeof ( normalized ) === 'number' ) {
@@ -18,9 +14,7 @@ function InstancedBufferAttribute( array, itemSize, normalized, meshPerAttribute
 
 	BufferAttribute.call( this, array, itemSize, normalized );
 
-	this._meshPerAttribute = meshPerAttribute || 1;
-
-	this.versionVAO = 0;
+	this.meshPerAttribute = meshPerAttribute || 1;
 
 }
 
@@ -42,7 +36,7 @@ InstancedBufferAttribute.prototype = Object.assign( Object.create( BufferAttribu
 
 	toJSON: function ()	{
 
-		var data = BufferAttribute.prototype.toJSON.call( this );
+		const data = BufferAttribute.prototype.toJSON.call( this );
 
 		data.meshPerAttribute = this.meshPerAttribute;
 
@@ -54,25 +48,6 @@ InstancedBufferAttribute.prototype = Object.assign( Object.create( BufferAttribu
 
 } );
 
-Object.defineProperties( InstancedBufferAttribute.prototype, {
 
-	meshPerAttribute: {
-
-		get: function () {
-
-			return this._meshPerAttribute;
-
-		},
-
-		set: function ( value ) {
-
-			this._meshPerAttribute = value;
-			this.versionVAO ++;
-
-		}
-
-	}
-
-} );
 
 export { InstancedBufferAttribute };

@@ -12,7 +12,7 @@ export interface IFog {
  */
 export class Fog implements IFog {
 
-	constructor( hex: number, near?: number, far?: number );
+	constructor( color: Color | number | string, near?: number, far?: number );
 
 	name: string;
 
@@ -31,6 +31,8 @@ export class Fog implements IFog {
 	 * Default is 1000.
 	 */
 	far: number;
+
+	readonly isFog: true;
 
 	clone(): this;
 	toJSON(): any;

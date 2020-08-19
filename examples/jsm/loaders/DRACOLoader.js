@@ -1,7 +1,3 @@
-/**
- * @author Don McCurdy / https://www.donmccurdy.com
- */
-
 import {
 	BufferAttribute,
 	BufferGeometry,
@@ -93,6 +89,7 @@ DRACOLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 
 		loader.setPath( this.path );
 		loader.setResponseType( 'arraybuffer' );
+		loader.setRequestHeader( this.requestHeader );
 
 		if ( this.crossOrigin === 'use-credentials' ) {
 
@@ -131,10 +128,6 @@ DRACOLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 
 	decodeGeometry: function ( buffer, taskConfig ) {
 
-		var worker;
-		var taskID = this.workerNextTaskID ++;
-		var taskCost = buffer.byteLength;
-
 		// TODO: For backward-compatibility, support 'attributeTypes' objects containing
 		// references (rather than names) to typed array constructors. These must be
 		// serialized before sending them to the worker.
@@ -149,6 +142,43 @@ DRACOLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 			}
 
 		}
+
+		//
+
+		var taskKey = JSON.stringify( taskConfig );
+
+		// Check for an existing task using this buffer. A transferred buffer cannot be transferred
+		// again from this thread.
+		if ( DRACOLoader.taskCache.has( buffer ) ) {
+
+			var cachedTask = DRACOLoader.taskCache.get( buffer );
+
+			if ( cachedTask.key === taskKey ) {
+
+				return cachedTask.promise;
+
+			} else if ( buffer.byteLength === 0 ) {
+
+				// Technically, it would be possible to wait for the previous task to complete,
+				// transfer the buffer back, and decode again with the second configuration. That
+				// is complex, and I don't know of any reason to decode a Draco buffer twice in
+				// different ways, so this is left unimplemented.
+				throw new Error(
+
+					'THREE.DRACOLoader: Unable to re-decode a buffer with different ' +
+					'settings. Buffer has already been transferred.'
+
+				);
+
+			}
+
+		}
+
+		//
+
+		var worker;
+		var taskID = this.workerNextTaskID ++;
+		var taskCost = buffer.byteLength;
 
 		// Obtain a worker and assign a task, and construct a geometry instance
 		// when the task completes.
@@ -171,8 +201,10 @@ DRACOLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 			.then( ( message ) => this._createGeometry( message.geometry ) );
 
 		// Remove task from the task list.
+		// Note: replaced '.finally()' with '.catch().then()' block - iOS 11 support (#19416)
 		geometryPending
-			.finally( () => {
+			.catch( () => true )
+			.then( () => {
 
 				if ( worker && taskID ) {
 
@@ -183,6 +215,14 @@ DRACOLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 				}
 
 			} );
+
+		// Cache the task result.
+		DRACOLoader.taskCache.set( buffer, {
+
+			key: taskKey,
+			promise: geometryPending
+
+		} );
 
 		return geometryPending;
 
@@ -610,6 +650,8 @@ DRACOLoader.DRACOWorker = function () {
 	}
 
 };
+
+DRACOLoader.taskCache = new WeakMap();
 
 /** Deprecated static methods */
 

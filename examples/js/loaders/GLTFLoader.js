@@ -439,7 +439,7 @@ THREE.GLTFLoader = ( function () {
 
 	}
 
-	GLTFMaterialsUnlitExtension.prototype.getMaterialType = function () {
+	GLTFMaterialsUnlitExtension.prototype.getMaterialType = function ( materialIndex ) {
 
 		return THREE.MeshBasicMaterial;
 
@@ -555,7 +555,7 @@ THREE.GLTFLoader = ( function () {
 
 		}
 
-		this.name = EXTENSIONS.MOZ_HUBS_TEXTURE_BASIS
+		this.name = EXTENSIONS.MOZ_HUBS_TEXTURE_BASIS;
 		this.basisTextureLoader = loader;
 
 	}
@@ -720,7 +720,7 @@ THREE.GLTFLoader = ( function () {
 				'refractionRatio',
 			],
 
-			getMaterialType: function () {
+			getMaterialType: function ( materialIndex ) {
 
 				return THREE.ShaderMaterial;
 
@@ -2186,7 +2186,7 @@ THREE.GLTFLoader = ( function () {
 		if ( material.aoMap && geometry.attributes.uv2 === undefined && geometry.attributes.uv !== undefined ) {
 
 			console.log( 'THREE.GLTFLoader: Duplicating UVs to support aoMap.' );
-			geometry.setAttribute( 'uv2', new THREE.BufferAttribute( geometry.attributes.uv.array, 2 ) );
+			geometry.setAttribute( 'uv2', geometry.attributes.uv );
 
 		}
 
@@ -2719,7 +2719,7 @@ THREE.GLTFLoader = ( function () {
 
 		} else if ( cameraDef.type === 'orthographic' ) {
 
-			camera = new THREE.OrthographicCamera( params.xmag / - 2, params.xmag / 2, params.ymag / 2, params.ymag / - 2, params.znear, params.zfar );
+			camera = new THREE.OrthographicCamera( - params.xmag, params.xmag, params.ymag, - params.ymag, params.znear, params.zfar );
 
 		}
 

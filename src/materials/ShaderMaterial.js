@@ -1,6 +1,10 @@
+import { Material } from './Material.js';
+import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
+
+import default_vertex from '../renderers/shaders/ShaderChunk/default_vertex.glsl.js';
+import default_fragment from '../renderers/shaders/ShaderChunk/default_fragment.glsl.js';
+
 /**
- * @author alteredq / http://alteredqualia.com/
- *
  * parameters = {
  *  defines: { "label" : "value" },
  *  uniforms: { "parameter1": { value: 1.0 }, "parameter2": { value2: 2 } },
@@ -19,13 +23,6 @@
  * }
  */
 
-import { Material } from './Material.js';
-import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
-import { cloneUniformsGroups } from '../renderers/shaders/UniformsUtils.js';
-
-import default_vertex from '../renderers/shaders/ShaderChunk/default_vertex.glsl.js';
-import default_fragment from '../renderers/shaders/ShaderChunk/default_fragment.glsl.js';
-
 function ShaderMaterial( parameters ) {
 
 	Material.call( this );
@@ -34,7 +31,6 @@ function ShaderMaterial( parameters ) {
 
 	this.defines = {};
 	this.uniforms = {};
-	this.uniformsGroups = [];
 
 	this.vertexShader = default_vertex;
 	this.fragmentShader = default_fragment;
@@ -97,7 +93,6 @@ ShaderMaterial.prototype.copy = function ( source ) {
 	this.vertexShader = source.vertexShader;
 
 	this.uniforms = cloneUniforms( source.uniforms );
-	this.uniformsGroups = cloneUniformsGroups( source.uniformsGroups );
 
 	this.defines = Object.assign( {}, source.defines );
 
@@ -112,7 +107,7 @@ ShaderMaterial.prototype.copy = function ( source ) {
 	this.morphTargets = source.morphTargets;
 	this.morphNormals = source.morphNormals;
 
-	this.extensions = source.extensions;
+	this.extensions = Object.assign( {}, source.extensions );
 
 	return this;
 
@@ -120,14 +115,14 @@ ShaderMaterial.prototype.copy = function ( source ) {
 
 ShaderMaterial.prototype.toJSON = function ( meta ) {
 
-	var data = Material.prototype.toJSON.call( this, meta );
+	const data = Material.prototype.toJSON.call( this, meta );
 
 	data.uniforms = {};
 
-	for ( var name in this.uniforms ) {
+	for ( const name in this.uniforms ) {
 
-		var uniform = this.uniforms[ name ];
-		var value = uniform.value;
+		const uniform = this.uniforms[ name ];
+		const value = uniform.value;
 
 		if ( value && value.isTexture ) {
 
@@ -195,9 +190,9 @@ ShaderMaterial.prototype.toJSON = function ( meta ) {
 	data.vertexShader = this.vertexShader;
 	data.fragmentShader = this.fragmentShader;
 
-	var extensions = {};
+	const extensions = {};
 
-	for ( var key in this.extensions ) {
+	for ( const key in this.extensions ) {
 
 		if ( this.extensions[ key ] === true ) extensions[ key ] = true;
 

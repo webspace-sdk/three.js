@@ -5,13 +5,8 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 		<link type="text/css" rel="stylesheet" href="main.css">
-		<!-- WebXR Device API (For Chrome M76+), expires 12/04/2019 -->
-		<meta http-equiv="origin-trial" content="Aq9LklhCLNUveuCr7QTpGpqwCPG817cYHdVyQuJPOZYk47iRB390lUKa5edVmgS1pZSl8HPspElEC/91Fz55dwIAAABTeyJvcmlnaW4iOiJodHRwczovL3RocmVlanMub3JnOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZU03NiIsImV4cGlyeSI6MTU3NTQxNzU5OX0=">
 	</head>
 	<body>
-
-		<script src="js/vr/HelioWebXRPolyfill.js"></script>
-
 		<script type="module">
 
 			import * as THREE from '../build/three.module.js';
@@ -28,10 +23,11 @@
 			var renderer = new THREE.WebGLRenderer( { antialias: true } );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.vr.enabled = true;
+			renderer.xr.enabled = true;
+			renderer.xr.setReferenceSpaceType( 'local' );
 			document.body.appendChild( renderer.domElement );
 
-			document.body.appendChild( VRButton.createButton( renderer, { referenceSpaceType: 'local' } ) );
+			document.body.appendChild( VRButton.createButton( renderer ) );
 
 			//
 
@@ -81,7 +77,7 @@
 
 			var geometry = new TreesGeometry( mesh );
 			var material = new THREE.MeshBasicMaterial( {
-				side: THREE.DoubleSide, vertexColors: THREE.VertexColors
+				side: THREE.DoubleSide, vertexColors: true
 			} );
 			var mesh = new THREE.Mesh( geometry, material );
 			scene.add( mesh );
@@ -131,7 +127,7 @@
 
 			var geometry = new RollerCoasterGeometry( curve, 1500 );
 			var material = new THREE.MeshPhongMaterial( {
-				vertexColors: THREE.VertexColors
+				vertexColors: true
 			} );
 			var mesh = new THREE.Mesh( geometry, material );
 			scene.add( mesh );

@@ -1,16 +1,3 @@
-/**
- * @author Garrett Johnson / http://gkjohnson.github.io/
- * https://github.com/gkjohnson/collada-exporter-js
- *
- * Usage:
- *  var exporter = new ColladaExporter();
- *
- *  var data = exporter.parse(mesh);
- *
- * Format Definition:
- *  https://www.khronos.org/collada/
- */
-
 import {
 	BufferGeometry,
 	Color,
@@ -21,6 +8,17 @@ import {
 	MeshBasicMaterial,
 	MeshLambertMaterial
 } from "../../../build/three.module.js";
+/**
+ * https://github.com/gkjohnson/collada-exporter-js
+ *
+ * Usage:
+ *  var exporter = new ColladaExporter();
+ *
+ *  var data = exporter.parse(mesh);
+ *
+ * Format Definition:
+ *  https://www.khronos.org/collada/
+ */
 
 var ColladaExporter = function () {};
 
@@ -265,6 +263,15 @@ ColladaExporter.prototype = {
 
 				}
 
+				// serialize lightmap uvs
+				if ( 'uv2' in bufferGeometry.attributes ) {
+
+					var uvName = `${ meshid }-texcoord2`;
+					gnode += getAttribute( bufferGeometry.attributes.uv2, uvName, [ 'S', 'T' ], 'float' );
+					triangleInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" set="1" />`;
+
+				}
+
 				// serialize colors
 				if ( 'color' in bufferGeometry.attributes ) {
 
@@ -440,6 +447,17 @@ ColladaExporter.prototype = {
 					) +
 
 					(
+						type !== 'constant' ?
+							'<bump>' +
+
+						(
+							m.normalMap ? '<texture texture="bump-sampler" texcoord="TEXCOORD" />' : ''
+						) +
+						'</bump>'
+							: ''
+					) +
+
+					(
 						type === 'phong' ?
 							`<specular><color sid="specular">${ specular.r } ${ specular.g } ${ specular.b } 1</color></specular>` +
 
@@ -491,6 +509,15 @@ ColladaExporter.prototype = {
 							`<init_from>${ processTexture( m.emissiveMap ) }</init_from>` +
 							'</surface></newparam>' +
 							'<newparam sid="emissive-sampler"><sampler2D><source>emissive-surface</source></sampler2D></newparam>' :
+							''
+					) +
+
+					(
+						m.normalMap ?
+							'<newparam sid="bump-surface"><surface type="2D">' +
+							`<init_from>${ processTexture( m.normalMap ) }</init_from>` +
+							'</surface></newparam>' +
+							'<newparam sid="bump-sampler"><sampler2D><source>bump-surface</source></sampler2D></newparam>' :
 							''
 					) +
 
@@ -553,8 +580,8 @@ ColladaExporter.prototype = {
 					matidsArray = new Array( materials.length );
 
 				}
-				matids = matidsArray.fill()
-					.map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
+
+				matids = matidsArray.fill().map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
 
 				node +=
 					`<instance_geometry url="#${ meshid }">` +
