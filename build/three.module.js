@@ -15566,6 +15566,12 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 
 		var updateBuffers = false;
 
+		if ( object.isInstancedMesh === true ) {
+
+			updateBuffers = true;
+
+		}
+
 		if ( vaoAvailable ) {
 
 			var state = getBindingState( geometry, program, material );
@@ -25307,12 +25313,6 @@ function WebGLRenderer( parameters ) {
 		state.setMaterial( material, frontFaceCW );
 
 		var program = setProgram( camera, fog, material, object );
-
-		if ( object.isInstancedMesh === true ) {
-
-			updateBuffers = true;
-
-		}
 
 		//
 

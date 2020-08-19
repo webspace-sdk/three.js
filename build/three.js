@@ -15581,6 +15581,12 @@
 
 			var updateBuffers = false;
 
+			if ( object.isInstancedMesh === true ) {
+
+				updateBuffers = true;
+
+			}
+
 			if ( vaoAvailable ) {
 
 				var state = getBindingState( geometry, program, material );
@@ -25317,12 +25323,6 @@
 			state.setMaterial( material, frontFaceCW );
 
 			var program = setProgram( camera, fog, material, object );
-
-			if ( object.isInstancedMesh === true ) {
-
-				updateBuffers = true;
-
-			}
 
 			//
 
