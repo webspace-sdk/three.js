@@ -14531,7 +14531,7 @@
 
 	// PlaneGeometry
 
-	function PlaneGeometry( width, height, widthSegments, heightSegments ) {
+	function PlaneGeometry( width, height, widthSegments, heightSegments, flipY ) {
 
 		Geometry.call( this );
 
@@ -14541,7 +14541,8 @@
 			width: width,
 			height: height,
 			widthSegments: widthSegments,
-			heightSegments: heightSegments
+			heightSegments: heightSegments,
+			flipY: flipY
 		};
 
 		this.fromBufferGeometry( new PlaneBufferGeometry( width, height, widthSegments, heightSegments ) );
@@ -14554,7 +14555,9 @@
 
 	// PlaneBufferGeometry
 
-	function PlaneBufferGeometry( width, height, widthSegments, heightSegments ) {
+	function PlaneBufferGeometry( width, height, widthSegments, heightSegments, flipY ) {
+		if ( flipY === void 0 ) flipY = true;
+
 
 		BufferGeometry.call( this );
 
@@ -14564,7 +14567,8 @@
 			width: width,
 			height: height,
 			widthSegments: widthSegments,
-			heightSegments: heightSegments
+			heightSegments: heightSegments,
+			flipY: flipY
 		};
 
 		width = width || 1;
@@ -14604,7 +14608,11 @@
 				normals.push( 0, 0, 1 );
 
 				uvs.push( ix / gridX );
-				uvs.push( 1 - ( iy / gridY ) );
+				uvs.push(
+					flipY ?
+						1 - ( iy / gridY ) :
+						iy / gridY
+				);
 
 			}
 
@@ -22423,6 +22431,16 @@
 					textureProperties.__maxMipLevel = 0;
 
 				}
+
+				// if ( window.ImageBitmap && texture.image instanceof ImageBitmap ) {
+
+				// 	console.info( "upload texture", "ImageBitmap", texture.id );
+
+				// } else if ( texture.image instanceof HTMLImageElement ) {
+
+				// 	console.info( "upload texture", "HTMLImageElement", texture.id, texture.image.src );
+
+				// }
 
 			}
 
@@ -32988,6 +33006,8 @@
 	CircleBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
 	CircleBufferGeometry.prototype.constructor = CircleBufferGeometry;
 
+
+
 	var Geometries = /*#__PURE__*/Object.freeze({
 		__proto__: null,
 		WireframeGeometry: WireframeGeometry,
@@ -33997,6 +34017,8 @@
 		return this;
 
 	};
+
+
 
 	var Materials = /*#__PURE__*/Object.freeze({
 		__proto__: null,
@@ -38358,6 +38380,8 @@
 		return this;
 
 	};
+
+
 
 	var Curves = /*#__PURE__*/Object.freeze({
 		__proto__: null,
@@ -45912,6 +45936,139 @@
 
 	};
 
+	/**
+	 * @author Mugen87 / https://github.com/Mugen87
+	 */
+
+	var id = 0;
+
+	function UniformsGroup() {
+
+		Object.defineProperty( this, 'id', { value: id ++ } );
+
+		this.name = '';
+
+		this.dynamic = false;
+		this.uniforms = [];
+
+	}
+
+	UniformsGroup.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+
+		constructor: UniformsGroup,
+
+		isUniformsGroup: true,
+
+		add: function ( uniform ) {
+
+			this.uniforms.push( uniform );
+
+			return this;
+
+		},
+
+		remove: function ( uniform ) {
+
+			var index = this.uniforms.indexOf( uniform );
+
+			if ( index !== - 1 ) { this.uniforms.splice( index, 1 ); }
+
+			return this;
+
+		},
+
+		setName: function ( name ) {
+
+			this.name = name;
+
+			return this;
+
+		},
+
+		dispose: function () {
+
+			this.dispatchEvent( { type: 'dispose' } );
+
+			return this;
+
+		},
+
+		copy: function ( source ) {
+
+			this.name = source.name;
+			this.dynamic = source.dynamic;
+
+			var uniformsSource = source.uniforms;
+
+			this.uniforms.length = 0;
+
+			for ( var i = 0, l = uniformsSource.length; i < l; i ++ ) {
+
+				this.uniforms.push( uniformsSource[ i ].clone() );
+
+			}
+
+			return this;
+
+		},
+
+		clone: function () {
+
+			return new this.constructor().copy( this );
+
+		}
+
+	} );
+
+	/**
+	 * @author robertlong / https://github.com/robertlong
+	 */
+
+	function RawUniformsGroup( data ) {
+
+		UniformsGroup.call( this );
+
+		this.data = data;
+		this.autoUpdate = true;
+		this.needsUpdate = false;
+
+	}
+
+	RawUniformsGroup.prototype = Object.assign( Object.create( UniformsGroup.prototype ), {
+
+		constructor: RawUniformsGroup,
+
+		isRawUniformsGroup: true,
+
+		add: function ( _uniform ) {
+
+			console.warn( 'THREE.RawUniformsGroup: .add() is unimplemented. Modify .data manually instead.' );
+
+			return this;
+
+		},
+
+		remove: function ( _uniform ) {
+
+			console.warn( 'THREE.RawUniformsGroup: .add() is unimplemented. Modify .data manually instead.' );
+
+			return this;
+
+		},
+
+		copy: function ( source ) {
+
+			UniformsGroup.prototype.copy.call( this );
+
+			this.autoUpdate = source.autoUpdate;
+			this.data = source.data.slice( 0 );
+
+			return this;
+
+		}
+
+	} );
+
 	function InstancedInterleavedBuffer( array, stride, meshPerAttribute ) {
 
 		InterleavedBuffer.call( this, array, stride );
@@ -50852,6 +51009,7 @@
 	exports.RGFormat = RGFormat;
 	exports.RGIntegerFormat = RGIntegerFormat;
 	exports.RawShaderMaterial = RawShaderMaterial;
+	exports.RawUniformsGroup = RawUniformsGroup;
 	exports.Ray = Ray;
 	exports.Raycaster = Raycaster;
 	exports.RectAreaLight = RectAreaLight;
@@ -50947,6 +51105,7 @@
 	exports.Uint8ClampedAttribute = Uint8ClampedAttribute;
 	exports.Uint8ClampedBufferAttribute = Uint8ClampedBufferAttribute;
 	exports.Uniform = Uniform;
+	exports.UniformsGroup = UniformsGroup;
 	exports.UniformsLib = UniformsLib;
 	exports.UniformsUtils = UniformsUtils;
 	exports.UnsignedByteType = UnsignedByteType;
