@@ -22308,8 +22308,16 @@
 
 				} else if ( isWebGL2 ) {
 
-					// WebGL 2.0 requires signed internalformat for glTexImage2D
-					glInternalFormat = 33189;
+					// https://github.com/mrdoob/three.js/pull/18939/files
+					if ( texture.type === UnsignedInt248Type ) {
+
+						glInternalFormat = 35056;
+
+					} else {
+
+						glInternalFormat = 33189;
+
+					}
 
 				}
 
@@ -22331,7 +22339,7 @@
 
 				// Depth stencil textures need the DEPTH_STENCIL internal format
 				// (https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/)
-				if ( texture.format === DepthStencilFormat ) {
+				if ( texture.format === DepthStencilFormat && glInternalFormat === 6402 ) {
 
 					glInternalFormat = 34041;
 
