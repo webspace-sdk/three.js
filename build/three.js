@@ -5294,6 +5294,7 @@
 
 		onBeforeRender: function () {},
 		onAfterRender: function () {},
+		onPassedFrustumCheck: function () {},
 
 		applyMatrix: function ( matrix ) {
 
@@ -15738,7 +15739,7 @@
 			var cachedAttributes = currentState.attributes;
 			var geometryAttributes = geometry.attributes;
 
-			var attributesNum = 0;
+			if ( Object.keys( cachedAttributes ).length !== Object.keys( geometryAttributes ).length ) { return true; }
 
 			for ( var key in geometryAttributes ) {
 
@@ -15754,11 +15755,7 @@
 				if ( geometryAttribute.data &&
 					cachedAttribute.data.version !== geometryAttribute.data.versionVAO ) { return true; }
 
-				attributesNum ++;
-
 			}
-
-			if ( currentState.attributesNum !== attributesNum ) { return true; }
 
 			return false;
 
@@ -15768,7 +15765,6 @@
 
 			var cache = {};
 			var attributes = geometry.attributes;
-			var attributesNum = 0;
 
 			for ( var key in attributes ) {
 
@@ -15788,12 +15784,10 @@
 				}
 
 				cache[ key ] = data;
-				attributesNum ++;
 
 			}
 
 			currentState.attributes = cache;
-			currentState.attributesNum = attributesNum;
 
 		}
 
@@ -25872,6 +25866,8 @@
 					}
 
 					if ( ! object.frustumCulled || _frustum.intersectsObject( object ) ) {
+
+						object.onPassedFrustumCheck();
 
 						if ( sortObjects ) {
 
