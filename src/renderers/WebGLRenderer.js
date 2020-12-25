@@ -1258,6 +1258,8 @@ function WebGLRenderer( parameters ) {
 
 				if ( ! object.frustumCulled || _frustum.intersectsObject( object ) ) {
 
+					object.onPassedFrustumCheck();
+
 					if ( sortObjects ) {
 
 						_vector3.setFromMatrixPosition( object.matrixWorld )

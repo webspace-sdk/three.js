@@ -127,6 +127,7 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 	onBeforeRender: function () {},
 	onAfterRender: function () {},
+	onPassedFrustumCheck: function () {},
 
 	applyMatrix: function ( matrix ) {
 
