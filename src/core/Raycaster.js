@@ -87,11 +87,9 @@ function ascSort( a, b ) {
 
 function intersectObject( object, raycaster, intersects, recursive ) {
 
-	if ( object.layers.test( raycaster.layers ) ) {
+	if ( ! object.visible ) return;
 
-		object.raycast( raycaster, intersects );
-
-	}
+	object.raycast( raycaster, intersects );
 
 	if ( recursive === true ) {
 
