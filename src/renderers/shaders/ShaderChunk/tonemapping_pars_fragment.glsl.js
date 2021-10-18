@@ -73,5 +73,31 @@ vec3 ACESFilmicToneMapping( vec3 color ) {
 
 }
 
+// Use a 3D LUT to perform tone mapping
+
+#ifdef LUT_TONE_MAPPING
+
+	precision highp sampler3D;
+	uniform sampler3D tonemappingLUT;
+
+	vec3 LUTToneMapping( vec3 color ) {
+
+		// Match Blender's exposure curve
+		// color *= pow(2.0, toneMappingExposure);
+
+		color *= toneMappingExposure;
+
+		// TODO don't hardcode this
+		float lutSize = 32.0;
+		float pixelWidth = 1.0 / lutSize;
+		float halfPixelWidth = 0.5 / lutSize;
+		vec3 uvw = vec3( halfPixelWidth ) + color.rgb * ( 1.0 - pixelWidth );
+
+		return texture( tonemappingLUT, uvw ).rgb;
+
+	}
+
+#endif
+
 vec3 CustomToneMapping( vec3 color ) { return color; }
 `;
