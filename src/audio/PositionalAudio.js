@@ -103,6 +103,16 @@ class PositionalAudio extends Audio {
 
 		super.updateMatrixWorld( force );
 
+		let setInitial = false;
+
+		if ( ! this._lastPosition ) {
+
+			setInitial = true;
+			this._lastPosition = new Vector3();
+			this._lastOrientation = new Vector3();
+
+		}
+
 		if ( this.hasPlaybackControl === true && this.isPlaying === false ) return;
 
 		this.matrixWorld.decompose( _position, _quaternion, _scale );
@@ -110,6 +120,21 @@ class PositionalAudio extends Audio {
 		_orientation.set( 0, 0, 1 ).applyQuaternion( _quaternion );
 
 		const panner = this.panner;
+
+		// Only apply changes to the pannernode if position or orientation have changed.
+		if (
+			! setInitial &&
+			Math.abs( _position.x - this._lastPosition.x ) < Number.EPSILON &&
+			Math.abs( _position.y - this._lastPosition.y ) < Number.EPSILON &&
+			Math.abs( _position.z - this._lastPosition.z ) < Number.EPSILON &&
+			Math.abs( _orientation.x - this._lastOrientation.x ) < Number.EPSILON &&
+			Math.abs( _orientation.y - this._lastOrientation.y ) < Number.EPSILON &&
+			Math.abs( _orientation.z - this._lastOrientation.z ) < Number.EPSILON
+		) {
+
+			return;
+
+		}
 
 		if ( panner.positionX ) {
 
@@ -130,6 +155,14 @@ class PositionalAudio extends Audio {
 			panner.setOrientation( _orientation.x, _orientation.y, _orientation.z );
 
 		}
+
+		this._lastPosition.x = _position.x;
+		this._lastPosition.y = _position.y;
+		this._lastPosition.z = _position.z;
+
+		this._lastOrientation.x = _orientation.x;
+		this._lastOrientation.y = _orientation.y;
+		this._lastOrientation.z = _orientation.z;
 
 	}
 
