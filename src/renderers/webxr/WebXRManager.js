@@ -506,6 +506,8 @@ class WebXRManager extends EventDispatcher {
 			camera.quaternion.copy( cameraVR.quaternion );
 			camera.scale.copy( cameraVR.scale );
 			camera.matrix.copy( cameraVR.matrix );
+			camera.matrix.decompose( camera.position, camera.quaternion, camera.scale );
+
 			camera.matrixWorld.copy( cameraVR.matrixWorld );
 
 			const children = camera.children;
