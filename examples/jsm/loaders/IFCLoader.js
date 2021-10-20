@@ -108,6 +108,10 @@ class IFCLoader extends Loader {
 			const mesh = new Mesh( geometry, material );
 			mesh.matrix = getMeshMatrix( placedGeometry.flatTransformation );
 			mesh.matrixAutoUpdate = false;
+
+			mesh.matrixWorldNeedsUpdate = true;
+			mesh.matrix.decompose(mesh.position, mesh.quaternion, mesh.scale);
+
 			return mesh;
 
 		}
