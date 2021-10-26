@@ -25,5 +25,3 @@ test/treeshake/stats.html
 
 
 **/node_modules
-
-build/*
