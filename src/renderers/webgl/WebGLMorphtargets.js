@@ -48,7 +48,7 @@ function WebGLMorphtargets( gl, capabilities, textures ) {
 
 		const objectInfluences = object.morphTargetInfluences;
 
-		if ( capabilities.isWebGL2 === true ) {
+		if ( capabilities.isWebGL2 === true && false /* casuing issues, disable for now, also see WebGLProgram */ ) {
 
 			// instead of using attributes, the WebGL 2 code path encodes morph targets
 			// into an array of data textures. Each layer represents a single morph target.
