@@ -639,6 +639,16 @@ class Quaternion {
 
 	}
 
+	// [HUBS] Similar to equals() but allows the diff under eps
+	near( quaternion, eps = Number.EPSILON ) {
+
+		return ( Math.abs( quaternion._x - this._x ) < eps ) &&
+			( Math.abs( quaternion._y - this._y ) < eps ) &&
+			( Math.abs( quaternion._z - this._z ) < eps ) &&
+			( Math.abs( quaternion._w - this._w ) < eps );
+
+	}
+
 	fromArray( array, offset = 0 ) {
 
 		this._x = array[ offset ];

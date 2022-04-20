@@ -676,6 +676,15 @@ class Vector3 {
 
 	}
 
+	// [HUBS] Similar to equals() but allows the diff under eps
+	near( v, eps = Number.EPSILON ) {
+
+		return ( Math.abs( v.x - this.x ) < eps ) &&
+			( Math.abs( v.y - this.y ) < eps ) &&
+			( Math.abs( v.z - this.z ) < eps );
+
+	}
+
 	fromArray( array, offset = 0 ) {
 
 		this.x = array[ offset ];
