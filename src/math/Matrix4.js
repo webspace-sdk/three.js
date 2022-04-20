@@ -831,6 +831,22 @@ class Matrix4 {
 
 	}
 
+	// [HUBS] Similar to equals() but allow the diff under eps.
+	near( matrix, eps = Number.EPSILON ) {
+
+		const te = this.elements;
+		const me = matrix.elements;
+
+		for ( let i = 0; i < 16; i ++ ) {
+
+			if ( Math.abs( te[ i ] - me[ i ] ) >= eps ) return false;
+
+		}
+
+		return true;
+
+	}
+
 	fromArray( array, offset = 0 ) {
 
 		for ( let i = 0; i < 16; i ++ ) {
