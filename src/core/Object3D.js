@@ -316,7 +316,7 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		if ( Math.abs( this.quaternion.dot( _q2 ) - 1.0 > Number.EPSILON ) ) {
+		if ( Math.abs( this.quaternion.dot( _q2 ) - 1.0 ) > 0.000001 ) {
 
 			this.quaternion.copy( _q2 );
 			this.matrixNeedsUpdate = true;
