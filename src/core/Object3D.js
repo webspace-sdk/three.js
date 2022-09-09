@@ -128,6 +128,8 @@ class Object3D extends EventDispatcher {
 	onBeforeRender() {}
 	onAfterRender() {}
 
+	onPassedFrustumCheck() {}
+
 	applyMatrix4( matrix ) {
 
 		if ( this.matrixAutoUpdate ) this.updateMatrix();
