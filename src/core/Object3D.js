@@ -11,6 +11,7 @@ let _object3DId = 0;
 
 const _v1 = new /*@__PURE__*/ Vector3();
 const _q1 = new /*@__PURE__*/ Quaternion();
+const _q2 = new /*@__PURE__*/ Quaternion();
 const _m1 = new /*@__PURE__*/ Matrix4();
 const _target = new /*@__PURE__*/ Vector3();
 
@@ -25,10 +26,10 @@ const _zAxis = new /*@__PURE__*/ Vector3( 0, 0, 1 );
 const _addedEvent = { type: 'added' };
 const _removedEvent = { type: 'removed' };
 
-const _zeroPos = new Vector3( 0, 0, 0 );
-const _zeroQuat = new Quaternion();
-const _oneScale = new Vector3( 1, 1, 1 );
-const _identity = new Matrix4();
+const _zeroPos = new /*@__PURE__*/ Vector3( 0, 0, 0 );
+const _zeroQuat = new /*@__PURE__*/ Quaternion();
+const _oneScale = new /*@__PURE__*/ Vector3( 1, 1, 1 );
+const _identity = new /*@__PURE__*/ Matrix4();
 _identity.identity();
 
 class Object3D extends EventDispatcher {
@@ -117,6 +118,11 @@ class Object3D extends EventDispatcher {
 
 		this.userData = {};
 
+		this.hasHadFirstMatrixUpdate = false;
+		this.matrixWorldNeedsUpdate = true;
+		this.matrixNeedsUpdate = true;
+		this.worldMatrixConsumerFlags = 0x00;
+
 	}
 
 	onBeforeRender() {}
@@ -129,6 +135,8 @@ class Object3D extends EventDispatcher {
 		this.matrix.premultiply( matrix );
 
 		this.matrix.decompose( this.position, this.quaternion, this.scale );
+
+		this.matrixWorldNeedsUpdate = true;
 
 		this._handleMatrixModification( this );
 
@@ -296,17 +304,22 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		this.quaternion.setFromRotationMatrix( _m1 );
+		_q2.setFromRotationMatrix( _m1 );
 
 		if ( parent ) {
 
 			_m1.extractRotation( parent.matrixWorld );
 			_q1.setFromRotationMatrix( _m1 );
-			this.quaternion.premultiply( _q1.invert() );
+			_q2.premultiply( _q1.invert() );
 
 		}
 
-		this.matrixNeedsUpdate = true;
+		if ( Math.abs( this.quaternion.dot( _q2 ) - 1.0 > Number.EPSILON ) ) {
+
+			this.quaternion.copy( _q2 );
+			this.matrixNeedsUpdate = true;
+
+		}
 
 	}
 
@@ -609,7 +622,7 @@ class Object3D extends EventDispatcher {
 	// includeInvisible - If true, does not ignore non-visible objects.
 	updateMatrixWorld( forceWorldUpdate, includeInvisible ) {
 
-		if ( ! this.visible && ! includeInvisible ) return;
+		if ( ! this.visible && ! includeInvisible && ! forceWorldUpdate ) return;
 
 		// Do not recurse upwards, since this is recursing downwards
 		this.updateMatrices( false, forceWorldUpdate, true );
@@ -683,6 +696,9 @@ class Object3D extends EventDispatcher {
 
 			this.hasHadFirstMatrixUpdate = true;
 			this.matrixWorldNeedsUpdate = true;
+			this.matrixNeedsUpdate = false;
+			this.childrenNeedMatrixWorldUpdate = false;
+			this.worldMatrixConsumerFlags = 0x00;
 			this.cachedMatrixWorld = this.matrixWorld;
 
 		} else if ( this.matrixNeedsUpdate || this.matrixAutoUpdate || forceLocalUpdate ) {
@@ -730,6 +746,7 @@ class Object3D extends EventDispatcher {
 
 			this.childrenNeedMatrixWorldUpdate = true;
 			this.matrixWorldNeedsUpdate = false;
+			this.worldMatrixConsumerFlags = 0x00;
 
 		}
 
