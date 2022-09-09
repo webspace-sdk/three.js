@@ -136,6 +136,8 @@ class Object3D extends EventDispatcher {
 
 	onAfterRender( /* renderer, scene, camera, geometry, material, group */ ) {}
 
+	onPassedFrustumCheck() {}
+
 	applyMatrix4( matrix ) {
 
 		if ( this.matrixAutoUpdate ) this.updateMatrix();
