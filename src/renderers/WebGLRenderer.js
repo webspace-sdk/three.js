@@ -956,6 +956,8 @@ function WebGLRenderer( parameters ) {
 	}
 
 	const animation = new WebGLAnimation();
+	this.animation = animation;
+
 	animation.setAnimationLoop( onAnimationFrame );
 
 	if ( typeof window !== 'undefined' ) animation.setContext( window );
