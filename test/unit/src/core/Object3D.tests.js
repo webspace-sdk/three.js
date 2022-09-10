@@ -440,6 +440,12 @@ export default QUnit.module( 'Core', () => {
 			assert.strictEqual( child1.parent, null, "First child has no parent" );
 			assert.strictEqual( child2.parent, null, "Second child has no parent" );
 
+			a.add( child1 );
+			assert.strictEqual( a.children.length, 1, "The child was added to the parent" );
+			child1.removeFromParent();
+			assert.strictEqual( a.children.length, 0, "The child was removed" );
+			assert.strictEqual( child1.parent, null, "Child has no parent" );
+
 		} );
 
 		QUnit.test( "attach", ( assert ) => {
@@ -843,6 +849,110 @@ export default QUnit.module( 'Core', () => {
 				0, 0, 1, 0,
 				4, 5, 6, 1
 			], "updateMatrixWorld() calculates world matrix from the current parent world matrix" );
+
+			// [HUBS] Hubs special flag matrixNeedsUpdate test
+
+			parent.matrix.identity();
+			parent.matrixWorld.identity();
+			parent.matrixAutoUpdate = false;
+			parent.matrixNeedsUpdate = false;
+			parent.visible = true;
+			child.matrix.identity();
+			child.matrixWorld.identity();
+			child.matrixAutoUpdate = false;
+			child.matrixNeedsUpdate = false;
+			child.visible = true;
+
+			parent.position.set( 1, 2, 3 );
+			parent.updateMatrixWorld();
+
+			assert.deepEqual( parent.matrix.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			], "[HUBS] No effect to local matrix if matrixNeedsUpdate is false" );
+
+			assert.deepEqual( parent.matrixWorld.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			], "[HUBS] No effect to world matrix if matrixNeedsUpdate is false" );
+
+			parent.matrixNeedsUpdate = true;
+			parent.updateMatrixWorld();
+
+			assert.deepEqual( parent.matrix.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				1, 2, 3, 1
+			], "[HUBS] Have an effect to local matrix if matrixNeedsUpdate is true" );
+
+			assert.deepEqual( parent.matrixWorld.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				1, 2, 3, 1
+			], "[HUBS] Have an effect to world matrix if matrixNeedsUpdate is true" );
+
+			assert.deepEqual( child.matrixWorld.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				1, 2, 3, 1
+			], "[HUBS] Have an effect to child world matrix if parent's matrixNeedsUpdate is true" );
+
+			assert.ok( parent.matrixNeedsUpdate === false, "[HUBS] matrixNeedsUpdate is cleared after the matrices update" );
+
+			// [HUBS] visibility test
+
+			parent.matrix.identity();
+			parent.matrixWorld.identity();
+			parent.visible = false;
+			child.matrix.identity();
+			child.matrixWorld.identity();
+			child.matrixNeedsUpdate = false;
+			child.visible = false;
+
+			parent.position.set( 1, 2, 3 );
+			parent.matrixNeedsUpdate = true;
+			parent.updateMatrixWorld();
+
+			assert.deepEqual( parent.matrix.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			], "[HUBS] No effect to matrix of an invisible object" );
+
+			parent.visible = true;
+			parent.updateMatrixWorld();
+
+			assert.deepEqual( parent.matrix.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				1, 2, 3, 1
+			], "[HUBS] Have an effect to matrix of a visible object" );
+
+			assert.deepEqual( child.matrixWorld.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				0, 0, 0, 1
+			], "[HUBS] No propagate to invisible child object's world matrix" );
+
+			child.visible = true;
+			parent.updateMatrixWorld();
+
+			assert.deepEqual( child.matrixWorld.elements, [
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, 0,
+				1, 2, 3, 1
+			], "[HUBS] Propagate to child object's world matrix later when it becomes visible" );
 
 		} );
 

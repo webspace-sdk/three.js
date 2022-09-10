@@ -665,6 +665,15 @@ class Vector3 {
 
 	}
 
+	// [HUBS] Similar to equals() but allows the diff under eps
+	near( v, eps = Number.EPSILON ) {
+
+		return ( Math.abs( v.x - this.x ) < eps ) &&
+			( Math.abs( v.y - this.y ) < eps ) &&
+			( Math.abs( v.z - this.z ) < eps );
+
+	}
+
 	fromArray( array, offset = 0 ) {
 
 		this.x = array[ offset ];
@@ -708,6 +717,30 @@ class Vector3 {
 		this.z = Math.random();
 
 		return this;
+
+	}
+
+	randomDirection() {
+
+		// Derived from https://mathworld.wolfram.com/SpherePointPicking.html
+
+		const u = ( Math.random() - 0.5 ) * 2;
+		const t = Math.random() * Math.PI * 2;
+		const f = Math.sqrt( 1 - u ** 2 );
+
+		this.x = f * Math.cos( t );
+		this.y = f * Math.sin( t );
+		this.z = u;
+
+		return this;
+
+	}
+
+	*[ Symbol.iterator ]() {
+
+		yield this.x;
+		yield this.y;
+		yield this.z;
 
 	}
 

@@ -39,13 +39,6 @@ class Camera extends Object3D {
 
 	getWorldDirection( target ) {
 
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Camera: .getWorldDirection() target is now required' );
-			target = new Vector3();
-
-		}
-
 		this.updateWorldMatrix( true, false );
 
 		const e = this.matrixWorld.elements;

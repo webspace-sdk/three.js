@@ -9,19 +9,20 @@ import * as MathUtils from '../math/MathUtils.js';
 
 let _object3DId = 0;
 
-const _v1 = new /*@__PURE__*/ Vector3();
-const _q1 = new /*@__PURE__*/ Quaternion();
-const _q2 = new /*@__PURE__*/ Quaternion();
-const _m1 = new /*@__PURE__*/ Matrix4();
-const _target = new /*@__PURE__*/ Vector3();
+const _v1 = /*@__PURE__*/ new Vector3();
+const _q1 = /*@__PURE__*/ new Quaternion();
+const _q2 = /*@__PURE__*/ new Quaternion();
+const _m1 = /*@__PURE__*/ new Matrix4();
+const _m2 = /*@__PURE__*/ new Matrix4();
+const _target = /*@__PURE__*/ new Vector3();
 
-const _position = new /*@__PURE__*/ Vector3();
-const _scale = new /*@__PURE__*/ Vector3();
-const _quaternion = new /*@__PURE__*/ Quaternion();
+const _position = /*@__PURE__*/ new Vector3();
+const _scale = /*@__PURE__*/ new Vector3();
+const _quaternion = /*@__PURE__*/ new Quaternion();
 
-const _xAxis = new /*@__PURE__*/ Vector3( 1, 0, 0 );
-const _yAxis = new /*@__PURE__*/ Vector3( 0, 1, 0 );
-const _zAxis = new /*@__PURE__*/ Vector3( 0, 0, 1 );
+const _xAxis = /*@__PURE__*/ new Vector3( 1, 0, 0 );
+const _yAxis = /*@__PURE__*/ new Vector3( 0, 1, 0 );
+const _zAxis = /*@__PURE__*/ new Vector3( 0, 0, 1 );
 
 const _addedEvent = { type: 'added' };
 const _removedEvent = { type: 'removed' };
@@ -31,6 +32,8 @@ const _zeroQuat = new /*@__PURE__*/ Quaternion();
 const _oneScale = new /*@__PURE__*/ Vector3( 1, 1, 1 );
 const _identity = new /*@__PURE__*/ Matrix4();
 _identity.identity();
+
+const _epsilon = 0.00000000001;
 
 class Object3D extends EventDispatcher {
 
@@ -105,11 +108,19 @@ class Object3D extends EventDispatcher {
 		this.matrixAutoUpdate = Object3D.DefaultMatrixAutoUpdate;
 		this.matrixWorldNeedsUpdate = false;
 
+		// [HUBS] Special flags to avoid unnecessary matrices update
+		this.matrixNeedsUpdate = false;
+		this.childrenNeedMatrixWorldUpdate = false;
+		this.matrixIsModified = false;
+		this.hasHadFirstMatrixUpdate = false;
+		this.worldMatrixConsumerFlags = 0x00;
+
 		this.layers = new Layers();
 		this.visible = true;
 
 		this.castShadow = false;
 		this.receiveShadow = false;
+		this.reflectionProbeMode = false;
 
 		this.frustumCulled = true;
 		this.renderOrder = 0;
@@ -118,15 +129,11 @@ class Object3D extends EventDispatcher {
 
 		this.userData = {};
 
-		this.hasHadFirstMatrixUpdate = false;
-		this.matrixWorldNeedsUpdate = true;
-		this.matrixNeedsUpdate = true;
-		this.worldMatrixConsumerFlags = 0x00;
-
 	}
 
-	onBeforeRender() {}
-	onAfterRender() {}
+	onBeforeRender( /* renderer, scene, camera, geometry, material, group */ ) {}
+
+	onAfterRender( /* renderer, scene, camera, geometry, material, group */ ) {}
 
 	onPassedFrustumCheck() {}
 
@@ -306,7 +313,9 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		_q2.setFromRotationMatrix( _m1 );
+		_q2.copy( this.quaternion );
+
+		this.quaternion.setFromRotationMatrix( _m1 );
 
 		if ( parent ) {
 
@@ -316,9 +325,12 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		if ( Math.abs( this.quaternion.dot( _q2 ) - 1.0 ) > 0.000001 ) {
+		if ( _q2.near( this.quaternion, _epsilon ) ) {
 
 			this.quaternion.copy( _q2 );
+
+		} else {
+
 			this.matrixNeedsUpdate = true;
 
 		}
@@ -391,6 +403,20 @@ class Object3D extends EventDispatcher {
 			this.children.splice( index, 1 );
 
 			object.dispatchEvent( _removedEvent );
+
+		}
+
+		return this;
+
+	}
+
+	removeFromParent() {
+
+		const parent = this.parent;
+
+		if ( parent !== null ) {
+
+			parent.remove( this );
 
 		}
 
@@ -588,24 +614,6 @@ class Object3D extends EventDispatcher {
 
 	}
 
-	_handleMatrixModification() {
-
-		if ( ! this.matrixIsModified ) {
-
-			this.matrixIsModified = true;
-
-			if ( this.cachedMatrixWorld ) {
-
-				this.cachedMatrixWorld.copy( this.matrixWorld );
-				this.matrixWorld = this.cachedMatrixWorld;
-
-			}
-
-		}
-
-	}
-
-
 	updateMatrix() {
 
 		this.matrix.compose( this.position, this.quaternion, this.scale );
@@ -638,7 +646,7 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		if ( this.childrenNeedMatrixWorldUpdate ) this.childrenNeedMatrixWorldUpdate = false;
+		this.childrenNeedMatrixWorldUpdate = false;
 
 	}
 
@@ -659,7 +667,7 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( this.childrenNeedMatrixWorldUpdate ) this.childrenNeedMatrixWorldUpdate = false;
+			this.childrenNeedMatrixWorldUpdate = false;
 
 		}
 
@@ -707,7 +715,7 @@ class Object3D extends EventDispatcher {
 
 			// updateMatrix() sets matrixWorldNeedsUpdate = true
 			this.updateMatrix();
-			if ( this.matrixNeedsUpdate ) this.matrixNeedsUpdate = false;
+			this.matrixNeedsUpdate = false;
 
 		}
 
@@ -719,6 +727,8 @@ class Object3D extends EventDispatcher {
 		}
 
 		if ( this.matrixWorldNeedsUpdate || forceWorldUpdate ) {
+
+			_m2.copy( this.matrixWorld );
 
 			if ( this.parent === null ) {
 
@@ -746,7 +756,16 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			this.childrenNeedMatrixWorldUpdate = true;
+			if ( _m2.near( this.matrixWorld, _epsilon ) ) {
+
+				this.matrixWorld.copy( _m2 );
+
+			} else {
+
+				this.childrenNeedMatrixWorldUpdate = true;
+
+			}
+
 			this.matrixWorldNeedsUpdate = false;
 			this.worldMatrixConsumerFlags = 0x00;
 
@@ -830,7 +849,29 @@ class Object3D extends EventDispatcher {
 
 		}
 
-		if ( this.isMesh || this.isLine || this.isPoints ) {
+		if ( this.isScene ) {
+
+			if ( this.background ) {
+
+				if ( this.background.isColor ) {
+
+					object.background = this.background.toJSON();
+
+				} else if ( this.background.isTexture ) {
+
+					object.background = this.background.toJSON( meta ).uuid;
+
+				}
+
+			}
+
+			if ( this.environment && this.environment.isTexture ) {
+
+				object.environment = this.environment.toJSON( meta ).uuid;
+
+			}
+
+		} else if ( this.isMesh || this.isLine || this.isPoints ) {
 
 			object.geometry = serialize( meta.geometries, this.geometry );
 
@@ -1017,6 +1058,23 @@ class Object3D extends EventDispatcher {
 		}
 
 		return this;
+
+	}
+
+	_handleMatrixModification() {
+
+		if ( ! this.matrixIsModified ) {
+
+			this.matrixIsModified = true;
+
+			if ( this.cachedMatrixWorld ) {
+
+				this.cachedMatrixWorld.copy( this.matrixWorld );
+				this.matrixWorld = this.cachedMatrixWorld;
+
+			}
+
+		}
 
 	}
 
