@@ -5076,8 +5076,6 @@
 
 	const _m1$1 = /*@__PURE__*/new Matrix4();
 
-	const _m2 = /*@__PURE__*/new Matrix4();
-
 	const _target = /*@__PURE__*/new Vector3();
 
 	const _position$3 = /*@__PURE__*/new Vector3();
@@ -5602,8 +5600,6 @@
 			}
 
 			if (this.matrixWorldNeedsUpdate || forceWorldUpdate) {
-				_m2.copy(this.matrixWorld);
-
 				if (this.parent === null) {
 					this.matrixWorld.copy(this.matrix);
 				} else {
@@ -5622,12 +5618,7 @@
 					}
 				}
 
-				if (_m2.near(this.matrixWorld, _epsilon)) {
-					this.matrixWorld.copy(_m2);
-				} else {
-					this.childrenNeedMatrixWorldUpdate = true;
-				}
-
+				this.childrenNeedMatrixWorldUpdate = true;
 				this.matrixWorldNeedsUpdate = false;
 				this.worldMatrixConsumerFlags = 0x00;
 			}
