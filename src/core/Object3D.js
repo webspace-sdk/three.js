@@ -115,6 +115,7 @@ class Object3D extends EventDispatcher {
 		this.childrenNeedMatrixWorldUpdate = false;
 		this.matrixIsModified = false;
 		this.hasHadFirstMatrixUpdate = false;
+		this.worldMatrixConsumerFlags = 0x00;
 
 		this.layers = new Layers();
 		this.visible = true;
@@ -143,6 +144,7 @@ class Object3D extends EventDispatcher {
 		this.matrix.premultiply( matrix );
 
 		this.matrix.decompose( this.position, this.quaternion, this.scale );
+		this.matrixWorldNeedsUpdate = true;
 
 		this._handleMatrixModification( this );
 
@@ -686,6 +688,7 @@ class Object3D extends EventDispatcher {
 
 			this.hasHadFirstMatrixUpdate = true;
 			this.matrixWorldNeedsUpdate = true;
+			this.worldMatrixConsumerFlags = 0x0;
 			this.cachedMatrixWorld = this.matrixWorld;
 
 		} else if ( this.matrixNeedsUpdate || this.matrixAutoUpdate || forceLocalUpdate ) {
@@ -733,17 +736,9 @@ class Object3D extends EventDispatcher {
 
 			}
 
-			if ( _m2.near( this.matrixWorld, _epsilon ) ) {
-
-				this.matrixWorld.copy( _m2 );
-
-			} else {
-
-				this.childrenNeedMatrixWorldUpdate = true;
-
-			}
-
+			this.childrenNeedMatrixWorldUpdate = true;
 			this.matrixWorldNeedsUpdate = false;
+			this.worldMatrixConsumerFlags = 0x0;
 
 		}
 
