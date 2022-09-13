@@ -746,6 +746,12 @@ class Object3D extends EventDispatcher {
 
 			}
 
+			if ( this.isCamera ) {
+
+				this.matrixWorldInverse.copy( this.matrixWorld ).invert();
+
+			}
+
 			this.matrixWorldNeedsUpdate = false;
 
 		}
