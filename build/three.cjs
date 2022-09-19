@@ -5977,6 +5977,7 @@ class Object3D extends EventDispatcher {
 		this.childrenNeedMatrixWorldUpdate = false;
 		this.matrixIsModified = false;
 		this.hasHadFirstMatrixUpdate = false;
+		this.worldMatrixConsumerFlags = 0x0;
 		this.layers = new Layers();
 		this.visible = true;
 		this.castShadow = false;
@@ -5988,14 +5989,21 @@ class Object3D extends EventDispatcher {
 		this.userData = {};
 	}
 
-	onBeforeRender() {}
+	onBeforeRender()
+	/* renderer, scene, camera, geometry, material, group */
+	{}
 
-	onAfterRender() {}
+	onAfterRender()
+	/* renderer, scene, camera, geometry, material, group */
+	{}
+
+	onPassedFrustumCheck() {}
 
 	applyMatrix4(matrix) {
 		if (this.matrixAutoUpdate) this.updateMatrix();
 		this.matrix.premultiply(matrix);
 		this.matrix.decompose(this.position, this.quaternion, this.scale);
+		this.matrixWorldNeedsUpdate = true;
 
 		this._handleMatrixModification(this);
 	}
@@ -6264,7 +6272,9 @@ class Object3D extends EventDispatcher {
 		return target.set(e[8], e[9], e[10]).normalize();
 	}
 
-	raycast() {}
+	raycast()
+	/* raycaster, intersects */
+	{}
 
 	traverse(callback) {
 		callback(this);
@@ -6368,6 +6378,7 @@ class Object3D extends EventDispatcher {
 
 			this.hasHadFirstMatrixUpdate = true;
 			this.matrixWorldNeedsUpdate = true;
+			this.worldMatrixConsumerFlags = 0x0;
 			this.cachedMatrixWorld = this.matrixWorld;
 		} else if (this.matrixNeedsUpdate || this.matrixAutoUpdate || forceLocalUpdate) {
 			// updateMatrix() sets matrixWorldNeedsUpdate = true
@@ -6407,7 +6418,12 @@ class Object3D extends EventDispatcher {
 				this.childrenNeedMatrixWorldUpdate = true;
 			}
 
+			if (this.isCamera) {
+				this.matrixWorldInverse.copy(this.matrixWorld).invert();
+			}
+
 			this.matrixWorldNeedsUpdate = false;
+			this.worldMatrixConsumerFlags = 0x0;
 		}
 	}
 
@@ -6951,11 +6967,17 @@ class Material extends EventDispatcher {
 		this._alphaTest = value;
 	}
 
-	onBuild() {}
+	onBuild()
+	/* shaderobject, renderer */
+	{}
 
-	onBeforeRender() {}
+	onBeforeRender()
+	/* renderer, scene, camera, geometry, object, group */
+	{}
 
-	onBeforeCompile() {}
+	onBeforeCompile()
+	/* shaderobject, renderer */
+	{}
 
 	customProgramCacheKey() {
 		return this.onBeforeCompile.toString();
@@ -7260,9 +7282,9 @@ class Material extends EventDispatcher {
 
 }
 
-Material.fromType = function
-	/*type*/
-() {
+Material.fromType = function ()
+/*type*/
+{
 	// TODO: Behavior added in Materials.js
 	return null;
 };
@@ -13029,106 +13051,106 @@ function WebGLMorphtargets(gl, capabilities, textures) {
 		if (capabilities.isWebGL2 === true && false
 		/* casuing issues, disable for now, also see WebGLProgram */
 		) {
-			// instead of using attributes, the WebGL 2 code path encodes morph targets
-			// into an array of data textures. Each layer represents a single morph target.
-			const morphAttribute = geometry.morphAttributes.position || geometry.morphAttributes.normal || geometry.morphAttributes.color;
-			const morphTargetsCount = morphAttribute !== undefined ? morphAttribute.length : 0;
-			let entry = morphTextures.get(geometry);
+				// instead of using attributes, the WebGL 2 code path encodes morph targets
+				// into an array of data textures. Each layer represents a single morph target.
+				const morphAttribute = geometry.morphAttributes.position || geometry.morphAttributes.normal || geometry.morphAttributes.color;
+				const morphTargetsCount = morphAttribute !== undefined ? morphAttribute.length : 0;
+				let entry = morphTextures.get(geometry);
 
-			if (entry === undefined || entry.count !== morphTargetsCount) {
-				if (entry !== undefined) entry.texture.dispose();
-				const hasMorphPosition = geometry.morphAttributes.position !== undefined;
-				const hasMorphNormals = geometry.morphAttributes.normal !== undefined;
-				const hasMorphColors = geometry.morphAttributes.color !== undefined;
-				const morphTargets = geometry.morphAttributes.position || [];
-				const morphNormals = geometry.morphAttributes.normal || [];
-				const morphColors = geometry.morphAttributes.color || [];
-				let vertexDataCount = 0;
-				if (hasMorphPosition === true) vertexDataCount = 1;
-				if (hasMorphNormals === true) vertexDataCount = 2;
-				if (hasMorphColors === true) vertexDataCount = 3;
-				let width = geometry.attributes.position.count * vertexDataCount;
-				let height = 1;
+				if (entry === undefined || entry.count !== morphTargetsCount) {
+					if (entry !== undefined) entry.texture.dispose();
+					const hasMorphPosition = geometry.morphAttributes.position !== undefined;
+					const hasMorphNormals = geometry.morphAttributes.normal !== undefined;
+					const hasMorphColors = geometry.morphAttributes.color !== undefined;
+					const morphTargets = geometry.morphAttributes.position || [];
+					const morphNormals = geometry.morphAttributes.normal || [];
+					const morphColors = geometry.morphAttributes.color || [];
+					let vertexDataCount = 0;
+					if (hasMorphPosition === true) vertexDataCount = 1;
+					if (hasMorphNormals === true) vertexDataCount = 2;
+					if (hasMorphColors === true) vertexDataCount = 3;
+					let width = geometry.attributes.position.count * vertexDataCount;
+					let height = 1;
 
-				if (width > capabilities.maxTextureSize) {
-					height = Math.ceil(width / capabilities.maxTextureSize);
-					width = capabilities.maxTextureSize;
-				}
+					if (width > capabilities.maxTextureSize) {
+						height = Math.ceil(width / capabilities.maxTextureSize);
+						width = capabilities.maxTextureSize;
+					}
 
-				const buffer = new Float32Array(width * height * 4 * morphTargetsCount);
-				const texture = new DataArrayTexture(buffer, width, height, morphTargetsCount);
-				texture.type = FloatType;
-				texture.needsUpdate = true; // fill buffer
+					const buffer = new Float32Array(width * height * 4 * morphTargetsCount);
+					const texture = new DataArrayTexture(buffer, width, height, morphTargetsCount);
+					texture.type = FloatType;
+					texture.needsUpdate = true; // fill buffer
 
-				const vertexDataStride = vertexDataCount * 4;
+					const vertexDataStride = vertexDataCount * 4;
 
-				for (let i = 0; i < morphTargetsCount; i++) {
-					const morphTarget = morphTargets[i];
-					const morphNormal = morphNormals[i];
-					const morphColor = morphColors[i];
-					const offset = width * height * 4 * i;
+					for (let i = 0; i < morphTargetsCount; i++) {
+						const morphTarget = morphTargets[i];
+						const morphNormal = morphNormals[i];
+						const morphColor = morphColors[i];
+						const offset = width * height * 4 * i;
 
-					for (let j = 0; j < morphTarget.count; j++) {
-						const stride = j * vertexDataStride;
+						for (let j = 0; j < morphTarget.count; j++) {
+							const stride = j * vertexDataStride;
 
-						if (hasMorphPosition === true) {
-							morph.fromBufferAttribute(morphTarget, j);
-							if (morphTarget.normalized === true) denormalize(morph, morphTarget);
-							buffer[offset + stride + 0] = morph.x;
-							buffer[offset + stride + 1] = morph.y;
-							buffer[offset + stride + 2] = morph.z;
-							buffer[offset + stride + 3] = 0;
-						}
+							if (hasMorphPosition === true) {
+								morph.fromBufferAttribute(morphTarget, j);
+								if (morphTarget.normalized === true) denormalize(morph, morphTarget);
+								buffer[offset + stride + 0] = morph.x;
+								buffer[offset + stride + 1] = morph.y;
+								buffer[offset + stride + 2] = morph.z;
+								buffer[offset + stride + 3] = 0;
+							}
 
-						if (hasMorphNormals === true) {
-							morph.fromBufferAttribute(morphNormal, j);
-							if (morphNormal.normalized === true) denormalize(morph, morphNormal);
-							buffer[offset + stride + 4] = morph.x;
-							buffer[offset + stride + 5] = morph.y;
-							buffer[offset + stride + 6] = morph.z;
-							buffer[offset + stride + 7] = 0;
-						}
+							if (hasMorphNormals === true) {
+								morph.fromBufferAttribute(morphNormal, j);
+								if (morphNormal.normalized === true) denormalize(morph, morphNormal);
+								buffer[offset + stride + 4] = morph.x;
+								buffer[offset + stride + 5] = morph.y;
+								buffer[offset + stride + 6] = morph.z;
+								buffer[offset + stride + 7] = 0;
+							}
 
-						if (hasMorphColors === true) {
-							morph.fromBufferAttribute(morphColor, j);
-							if (morphColor.normalized === true) denormalize(morph, morphColor);
-							buffer[offset + stride + 8] = morph.x;
-							buffer[offset + stride + 9] = morph.y;
-							buffer[offset + stride + 10] = morph.z;
-							buffer[offset + stride + 11] = morphColor.itemSize === 4 ? morph.w : 1;
+							if (hasMorphColors === true) {
+								morph.fromBufferAttribute(morphColor, j);
+								if (morphColor.normalized === true) denormalize(morph, morphColor);
+								buffer[offset + stride + 8] = morph.x;
+								buffer[offset + stride + 9] = morph.y;
+								buffer[offset + stride + 10] = morph.z;
+								buffer[offset + stride + 11] = morphColor.itemSize === 4 ? morph.w : 1;
+							}
 						}
 					}
+
+					entry = {
+						count: morphTargetsCount,
+						texture: texture,
+						size: new Vector2(width, height)
+					};
+					morphTextures.set(geometry, entry);
+
+					function disposeTexture() {
+						texture.dispose();
+						morphTextures.delete(geometry);
+						geometry.removeEventListener('dispose', disposeTexture);
+					}
+
+					geometry.addEventListener('dispose', disposeTexture);
+				} //
+
+
+				let morphInfluencesSum = 0;
+
+				for (let i = 0; i < objectInfluences.length; i++) {
+					morphInfluencesSum += objectInfluences[i];
 				}
 
-				entry = {
-					count: morphTargetsCount,
-					texture: texture,
-					size: new Vector2(width, height)
-				};
-				morphTextures.set(geometry, entry);
-
-				function disposeTexture() {
-					texture.dispose();
-					morphTextures.delete(geometry);
-					geometry.removeEventListener('dispose', disposeTexture);
-				}
-
-				geometry.addEventListener('dispose', disposeTexture);
-			} //
-
-
-			let morphInfluencesSum = 0;
-
-			for (let i = 0; i < objectInfluences.length; i++) {
-				morphInfluencesSum += objectInfluences[i];
-			}
-
-			const morphBaseInfluence = geometry.morphTargetsRelative ? 1 : 1 - morphInfluencesSum;
-			program.getUniforms().setValue(gl, 'morphTargetBaseInfluence', morphBaseInfluence);
-			program.getUniforms().setValue(gl, 'morphTargetInfluences', objectInfluences);
-			program.getUniforms().setValue(gl, 'morphTargetsTexture', entry.texture, textures);
-			program.getUniforms().setValue(gl, 'morphTargetsTextureSize', entry.size);
-		} else {
+				const morphBaseInfluence = geometry.morphTargetsRelative ? 1 : 1 - morphInfluencesSum;
+				program.getUniforms().setValue(gl, 'morphTargetBaseInfluence', morphBaseInfluence);
+				program.getUniforms().setValue(gl, 'morphTargetInfluences', objectInfluences);
+				program.getUniforms().setValue(gl, 'morphTargetsTexture', entry.texture, textures);
+				program.getUniforms().setValue(gl, 'morphTargetsTextureSize', entry.size);
+			} else {
 			// When object doesn't have morph target influences defined, we treat it as a 0-length array
 			// This is important to make sure we set up morphTargetBaseInfluence / morphTargetInfluences
 			const length = objectInfluences === undefined ? 0 : objectInfluences.length;
@@ -19903,9 +19925,9 @@ function WebGLRenderer(parameters = {}) {
 		_isContextLost = true;
 	}
 
-	function
-		/* event */
-	onContextRestore() {
+	function onContextRestore()
+	/* event */
+	{
 		console.log('THREE.WebGLRenderer: Context Restored.');
 		_isContextLost = false;
 		const infoAutoReset = info.autoReset;
@@ -20082,6 +20104,7 @@ function WebGLRenderer(parameters = {}) {
 	}
 
 	const animation = new WebGLAnimation();
+	this.animation = animation;
 	animation.setAnimationLoop(onAnimationFrame);
 	if (typeof self !== 'undefined') animation.setContext(self);
 
@@ -20225,6 +20248,8 @@ function WebGLRenderer(parameters = {}) {
 				}
 
 				if (!object.frustumCulled || _frustum.intersectsObject(object)) {
+					object.onPassedFrustumCheck();
+
 					if (sortObjects) {
 						_vector3.setFromMatrixPosition(object.matrixWorld).applyMatrix4(_projScreenMatrix);
 					}
@@ -21054,7 +21079,9 @@ class FogExp2 {
 		return new FogExp2(this.color, this.density);
 	}
 
-	toJSON() {
+	toJSON()
+	/* meta */
+	{
 		return {
 			type: 'FogExp2',
 			color: this.color.getHex(),
@@ -21077,7 +21104,9 @@ class Fog {
 		return new Fog(this.color, this.near, this.far);
 	}
 
-	toJSON() {
+	toJSON()
+	/* meta */
+	{
 		return {
 			type: 'Fog',
 			color: this.color.getHex(),
@@ -22641,7 +22670,9 @@ class Curve {
 	//	- t [0 .. 1]
 
 
-	getPoint() {
+	getPoint()
+	/* t, optionalTarget */
+	{
 		console.warn('THREE.Curve: .getPoint() not implemented.');
 		return null;
 	} // Get point at relative position in curve according to arc length
@@ -27574,11 +27605,15 @@ class Interpolant {
 	} // Template methods for derived classes:
 
 
-	interpolate_() {
+	interpolate_()
+	/* i1, t0, t, t1 */
+	{
 		throw new Error('call to abstract method'); // implementations shall return this.resultBuffer
 	}
 
-	intervalChanged_() {// empty
+	intervalChanged_()
+	/* i1, t0, t1 */
+	{// empty
 	}
 
 }
@@ -28567,7 +28602,9 @@ class Loader {
 		this.requestHeader = {};
 	}
 
-	load() {}
+	load()
+	/* url, onLoad, onProgress, onError */
+	{}
 
 	loadAsync(url, onProgress) {
 		const scope = this;
@@ -28576,7 +28613,9 @@ class Loader {
 		});
 	}
 
-	parse() {}
+	parse()
+	/* data */
+	{}
 
 	setCrossOrigin(crossOrigin) {
 		this.crossOrigin = crossOrigin;

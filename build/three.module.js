@@ -7705,6 +7705,7 @@ class Object3D extends EventDispatcher {
 		this.childrenNeedMatrixWorldUpdate = false;
 		this.matrixIsModified = false;
 		this.hasHadFirstMatrixUpdate = false;
+		this.worldMatrixConsumerFlags = 0x0;
 
 		this.layers = new Layers();
 		this.visible = true;
@@ -7726,6 +7727,8 @@ class Object3D extends EventDispatcher {
 
 	onAfterRender( /* renderer, scene, camera, geometry, material, group */ ) {}
 
+	onPassedFrustumCheck() {}
+
 	applyMatrix4( matrix ) {
 
 		if ( this.matrixAutoUpdate ) this.updateMatrix();
@@ -7733,6 +7736,7 @@ class Object3D extends EventDispatcher {
 		this.matrix.premultiply( matrix );
 
 		this.matrix.decompose( this.position, this.quaternion, this.scale );
+		this.matrixWorldNeedsUpdate = true;
 
 		this._handleMatrixModification( this );
 
@@ -8279,6 +8283,7 @@ class Object3D extends EventDispatcher {
 
 			this.hasHadFirstMatrixUpdate = true;
 			this.matrixWorldNeedsUpdate = true;
+			this.worldMatrixConsumerFlags = 0x0;
 			this.cachedMatrixWorld = this.matrixWorld;
 
 		} else if ( this.matrixNeedsUpdate || this.matrixAutoUpdate || forceLocalUpdate ) {
@@ -8336,7 +8341,14 @@ class Object3D extends EventDispatcher {
 
 			}
 
+			if ( this.isCamera ) {
+
+				this.matrixWorldInverse.copy( this.matrixWorld ).invert();
+
+			}
+
 			this.matrixWorldNeedsUpdate = false;
+			this.worldMatrixConsumerFlags = 0x0;
 
 		}
 
@@ -27403,6 +27415,8 @@ function WebGLRenderer( parameters = {} ) {
 	}
 
 	const animation = new WebGLAnimation();
+	this.animation = animation;
+
 	animation.setAnimationLoop( onAnimationFrame );
 
 	if ( typeof self !== 'undefined' ) animation.setContext( self );
@@ -27631,6 +27645,8 @@ function WebGLRenderer( parameters = {} ) {
 				}
 
 				if ( ! object.frustumCulled || _frustum.intersectsObject( object ) ) {
+
+					object.onPassedFrustumCheck();
 
 					if ( sortObjects ) {
 
