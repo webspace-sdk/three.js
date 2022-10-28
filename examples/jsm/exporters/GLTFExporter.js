@@ -631,7 +631,7 @@ GLTFExporter.prototype = {
 
 				var reader = new window.FileReader();
 				reader.readAsArrayBuffer( blob );
-				reader.onloadend = function () {
+				reader.addEventListener("loadend", function () {
 
 					var buffer = getPaddedArrayBuffer( reader.result );
 
@@ -647,7 +647,7 @@ GLTFExporter.prototype = {
 
 					resolve( outputJSON.bufferViews.length - 1 );
 
-				};
+				});
 
 			} );
 
@@ -2087,7 +2087,7 @@ GLTFExporter.prototype = {
 
 				var reader = new window.FileReader();
 				reader.readAsArrayBuffer( blob );
-				reader.onloadend = function () {
+				reader.addEventListener("loadend",function () {
 
 					// Binary chunk.
 					var binaryChunk = getPaddedArrayBuffer( reader.result );
@@ -2121,13 +2121,13 @@ GLTFExporter.prototype = {
 
 					var glbReader = new window.FileReader();
 					glbReader.readAsArrayBuffer( glbBlob );
-					glbReader.onloadend = function () {
+					glbReader.addEventListener("loadend", function () {
 
 						onDone( glbReader.result );
 
-					};
+					});
 
-				};
+				});
 
 			} else {
 
@@ -2135,13 +2135,13 @@ GLTFExporter.prototype = {
 
 					var reader = new window.FileReader();
 					reader.readAsDataURL( blob );
-					reader.onloadend = function () {
+					reader.addEventListener("loadend", function () {
 
 						var base64data = reader.result;
 						outputJSON.buffers[ 0 ].uri = base64data;
 						onDone( outputJSON );
 
-					};
+					});
 
 				} else {
 
