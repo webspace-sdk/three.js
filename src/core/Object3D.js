@@ -722,14 +722,15 @@ class Object3D extends EventDispatcher {
 			} else {
 
 				// If the matrix is unmodified, it is the identity matrix,
-				// and hence we can use the parent's world matrix directly.
+				// and hence we can copy the parent's world matrix directly,
+				// which is a little faster then doing the multiplication.
 				//
 				// Note this assumes all callers will either not pass skipParents=true
 				// *or* will update the parent themselves beforehand as is done in
 				// updateMatrixWorld.
 				if ( ! this.matrixIsModified ) {
 
-					this.matrixWorld = this.parent.matrixWorld;
+					this.matrixWorld.copy( this.parent.matrixWorld );
 
 				} else {
 
